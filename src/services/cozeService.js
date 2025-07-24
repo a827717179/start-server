@@ -22,7 +22,7 @@ const getStartDetail = async (params) => {
       parameters: params
     });
     
-    console.log('Coze API 响应成功');
+    console.log('Coze API 响应成功', response);
     return response;
   } catch (error) {
     console.error('Coze API 调用失败:', error.response ? error.response.data : error.message);

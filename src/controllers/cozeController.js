@@ -12,8 +12,9 @@ const getStartDetail = async (req, res) => {
     // 参数验证
     if (!params || Object.keys(params).length === 0) {
       return res.status(400).json({
-        success: false,
-        message: '请求参数不能为空'
+        "code": 400,
+        "data": null,
+        "message": '请求参数不能为空'
       });
     }
     
@@ -21,16 +22,17 @@ const getStartDetail = async (req, res) => {
     const result = await cozeService.getStartDetail(params);
     
     return res.status(200).json({
-      success: true,
-      data: result
+      "code": 200,
+      "data": JSON.parse(result.data),
+      "message": result.msg
     });
   } catch (error) {
     console.error('处理请求失败:', error);
     
     return res.status(500).json({
-      success: false,
-      message: '服务器内部错误',
-      error: error.message
+      "code": 500,
+      "data": null,
+      "message": error.message
     });
   }
 };
@@ -47,8 +49,9 @@ const getStartDetailStream = async (req, res) => {
     // 参数验证
     if (!params || Object.keys(params).length === 0) {
       return res.status(400).json({
-        success: false,
-        message: '请求参数不能为空'
+        "code": 400,
+        "data": null,
+        "message": '请求参数不能为空'
       });
     }
 
@@ -82,9 +85,9 @@ const getStartDetailStream = async (req, res) => {
     // 如果响应头尚未发送，则返回错误信息
     if (!res.headersSent) {
       return res.status(500).json({
-        success: false,
-        message: '服务器内部错误',
-        error: error.message
+        "code": 500,
+        "data": null,
+        "message": error.message
       });
     }
     
@@ -109,8 +112,9 @@ const chatStreamController = async (req, res) => {
     // 参数验证
     if (!content) {
       return res.status(400).json({
-        success: false,
-        message: '聊天内容不能为空'
+        "code": 400,
+        "data": null,
+        "message": '聊天内容不能为空'
       });
     }
 
@@ -145,9 +149,9 @@ const chatStreamController = async (req, res) => {
     // 如果响应头尚未发送，则返回错误信息
     if (!res.headersSent) {
       return res.status(500).json({
-        success: false,
-        message: '服务器内部错误',
-        error: error.message
+        "code": 500,
+        "data": null,
+        "message": error.message
       });
     }
     
