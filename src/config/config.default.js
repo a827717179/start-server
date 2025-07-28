@@ -9,6 +9,7 @@ const config = {
     COZE_BASE_URL: process.env.COZE_BASE_URL || 'https://api.coze.cn',
     COZE_WORKFLOW_ID: process.env.COZE_WORKFLOW_ID || '7529877789434445833',
     COZE_BOT_ID: process.env.COZE_BOT_ID || '7528335712321044520',
+    COZE_IMG_WORKFLOW_ID: process.env.COZE_IMG_WORKFLOW_ID || '7528354883407118351',
     auth: {
       pat: {
         // 个人访问令牌

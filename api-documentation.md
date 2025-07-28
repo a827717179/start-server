@@ -2,7 +2,7 @@
 
 ## 基本信息
 
-- **基础URL**：`http://192.168.220.68:3000`
+- **基础URL**：`http://您的服务器地址:3000`
 - **内容类型**：`application/json`
 
 ## 接口列表
@@ -183,6 +183,147 @@ response.data.on('data', (chunk) => {
 });
 ```
 
+### 4. 图片生成接口（非流式）
+
+- **接口URL**：`/api/getImg`
+- **请求方法**：`POST`
+- **功能描述**：调用Coze工作流生成图片并获取完整结果（非流式）
+
+#### 请求参数
+
+```json
+{
+  "birth": "2001-08-09 12:23:12",
+  "sex": "man",
+  "companion_sex": "woman",
+  "area": "Beijing"
+}
+```
+
+#### 响应格式
+
+**成功响应**：
+
+```json
+{
+  "success": true,
+  "data": {
+    // Coze工作流返回的完整数据
+  },
+  "imageUrls": [
+    "https://图片URL1.jpg",
+    "https://图片URL2.jpg"
+  ]
+}
+```
+
+**错误响应**：
+
+```json
+{
+  "success": false,
+  "message": "错误描述",
+  "error": "详细错误信息"
+}
+```
+
+#### 请求示例
+
+```javascript
+// 使用axios
+const response = await axios.post('http://您的服务器地址:3000/api/getImg', {
+  birth: "2001-08-09 12:23:12",
+  sex: "man",
+  companion_sex: "woman",
+  area: "Beijing"
+});
+
+console.log(response.data);
+
+// 提取图片 URL
+const imageUrls = response.data.imageUrls;
+console.log('生成的图片URL列表:', imageUrls);
+```
+
+### 5. 图片生成接口（流式）
+
+- **接口URL**：`/api/getImg/stream`
+- **请求方法**：`POST`
+- **功能描述**：调用Coze工作流生成图片并获取流式响应
+
+#### 请求参数
+
+```json
+{
+  "birth": "2001-08-09 12:23:12",
+  "sex": "man",
+  "companion_sex": "woman",
+  "area": "Beijing"
+}
+```
+
+#### 响应格式
+
+Server-Sent Events (SSE) 格式的流式响应，包含图片URL：
+
+```
+data: {"image_urls":["https://图片URL1.jpg"]}
+
+data: {"image_urls":["https://图片URL2.jpg"]}
+
+...
+
+data: [DONE]
+```
+
+#### 请求示例
+
+```javascript
+// 使用axios
+const response = await axios.post('http://您的服务器地址:3000/api/getImg/stream', {
+  birth: "2001-08-09 12:23:12",
+  sex: "man",
+  companion_sex: "woman",
+  area: "Beijing"
+}, {
+  responseType: 'stream'
+});
+
+// 处理流式响应
+let imageUrls = [];
+
+response.data.on('data', (chunk) => {
+  const text = chunk.toString();
+  
+  if (text.startsWith('data: ')) {
+    const data = text.substring(6);
+    
+    if (data.trim() === '[DONE]') {
+      console.log('图片生成流式响应结束');
+      return;
+    }
+    
+    try {
+      const jsonData = JSON.parse(data);
+      console.log('收到图片数据:', jsonData);
+      
+      // 提取图片 URL
+      if (jsonData && jsonData.image_urls && jsonData.image_urls.length > 0) {
+        imageUrls = imageUrls.concat(jsonData.image_urls);
+        console.log('当前图片 URL 列表:', imageUrls);
+      }
+    } catch (e) {
+      console.log('原始数据:', data);
+    }
+  }
+});
+
+response.data.on('end', () => {
+  console.log('连接已关闭');
+  console.log('最终图片 URL 列表:', imageUrls);
+});
+```
+
 ## 错误码说明
 
 | 错误码 | 说明 |
@@ -200,6 +341,7 @@ response.data.on('data', (chunk) => {
 | COZE_BASE_URL | Coze API基础URL | https://api.coze.cn |
 | COZE_WORKFLOW_ID | 工作流ID | - |
 | COZE_BOT_ID | 机器人ID | - |
+| COZE_IMG_WORKFLOW_ID | 图片生成工作流ID | - |
 | PORT | 服务器端口 | 3000 |
 
 ## 前端集成示例
@@ -319,6 +461,159 @@ response.data.on('data', (chunk) => {
     // 按Enter发送消息
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
+```
+
+### 图片生成示例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Coze 图片生成示例</title>
+  <style>
+    #imageContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .image-item {
+      max-width: 300px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .image-item img {
+      width: 100%;
+      border-radius: 4px;
+    }
+    #statusMessage {
+      margin-top: 10px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Coze 图片生成示例</h1>
+  <form id="imageForm">
+    <div>
+      <label>生日:</label>
+      <input type="text" id="birth" value="2001-08-09 12:23:12">
+    </div>
+    <div>
+      <label>性别:</label>
+      <select id="sex">
+        <option value="man">男</option>
+        <option value="woman">女</option>
+      </select>
+    </div>
+    <div>
+      <label>伴侣性别:</label>
+      <select id="companion_sex">
+        <option value="woman">女</option>
+        <option value="man">男</option>
+      </select>
+    </div>
+    <div>
+      <label>地区:</label>
+      <input type="text" id="area" value="Beijing">
+    </div>
+    <button type="submit">生成图片</button>
+  </form>
+  
+  <div id="statusMessage"></div>
+  <div id="imageContainer"></div>
+
+  <script>
+    const form = document.getElementById('imageForm');
+    const statusMessage = document.getElementById('statusMessage');
+    const imageContainer = document.getElementById('imageContainer');
+    const serverUrl = 'http://您的服务器地址:3000';
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // 清空之前的结果
+      imageContainer.innerHTML = '';
+      statusMessage.textContent = '正在生成图片，请稍候...';
+      
+      // 获取表单数据
+      const params = {
+        birth: document.getElementById('birth').value,
+        sex: document.getElementById('sex').value,
+        companion_sex: document.getElementById('companion_sex').value,
+        area: document.getElementById('area').value
+      };
+      
+      try {
+        const response = await fetch(`${serverUrl}/api/getImg/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+        });
+        
+        // 处理流式响应
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let imageUrls = [];
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const text = decoder.decode(value);
+          const lines = text.split('\n\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.substring(6);
+              
+              if (data.trim() === '[DONE]') {
+                statusMessage.textContent = '图片生成完成！';
+                break;
+              }
+              
+              try {
+                const jsonData = JSON.parse(data);
+                
+                // 提取图片 URL
+                if (jsonData && jsonData.image_urls && jsonData.image_urls.length > 0) {
+                  for (const url of jsonData.image_urls) {
+                    if (!imageUrls.includes(url)) {
+                      imageUrls.push(url);
+                      
+                      // 创建图片元素
+                      const div = document.createElement('div');
+                      div.className = 'image-item';
+                      
+                      const img = document.createElement('img');
+                      img.src = url;
+                      img.alt = '生成的图片';
+                      
+                      div.appendChild(img);
+                      imageContainer.appendChild(div);
+                    }
+                  }
+                  
+                  statusMessage.textContent = `已接收 ${imageUrls.length} 张图片...`;
+                }
+              } catch (e) {
+                console.error('解析失败:', e);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('请求失败:', error);
+        statusMessage.textContent = '生成图片失败，请稍后再试。';
+      }
     });
   </script>
 </body>
