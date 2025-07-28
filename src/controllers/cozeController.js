@@ -21,6 +21,8 @@ const getStartDetail = async (req, res) => {
     // 调用服务获取结果
     const result = await cozeService.getStartDetail(params);
     
+    console.log('处理结果', result);
+
     return res.status(200).json({
       "code": 200,
       "data": JSON.parse(result.data),
@@ -196,6 +198,8 @@ const getImgController = async (req, res) => {
     
     // 调用服务获取结果
     const result = await cozeService.getImg(params);
+
+    console.log('处理结果', result);
     
     return res.status(200).json({
       "code": 200,
