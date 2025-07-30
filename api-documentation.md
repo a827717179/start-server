@@ -2,8 +2,41 @@
 
 ## 基本信息
 
-- **基础URL**：`http://您的服务器地址:3000`
+- **基础URL**：`http://您的IP地址:3000`
 - **内容类型**：`application/json`
+
+## 访问方式
+
+服务器启动后，会在控制台显示可用的访问地址：
+
+```
+可通过以下地址访问服务:
+- http://localhost:3000
+- http://192.168.220.58:3000 (en0)
+- http://192.168.50.10:3000 (en3)
+```
+
+您可以使用任一地址访问API服务。
+
+## 通用响应格式
+
+所有API接口均返回以下格式的数据：
+
+```json
+{
+  "code": 200,         // 状态码：200成功，400参数错误，500服务器错误
+  "data": {},          // 数据主体，成功时包含结果数据，失败时为null
+  "message": "成功"    // 消息说明
+}
+```
+
+## 通用参数说明
+
+### birth 字段
+
+- **格式**: `YYYY-MM-DD HH:mm:ss`，例如 `2001-08-09 12:23:12`
+- **说明**: 用于生日或时间相关的参数，必须符合标准日期时间格式
+- **验证**: 服务端会验证日期格式是否有效，无效格式将返回400错误
 
 ## 接口列表
 
@@ -17,7 +50,7 @@
 
 ```json
 {
-  "birth": "2001-08-09 12:23:12",
+  "birth": "2001-08-09 12:23:12",  // 标准日期时间格式
   "sex": "man"
   // 可添加其他工作流所需参数
 }
@@ -29,10 +62,11 @@
 
 ```json
 {
-  "success": true,
+  "code": 200,
   "data": {
     // Coze工作流返回的完整数据
-  }
+  },
+  "message": "成功"
 }
 ```
 
@@ -40,9 +74,29 @@
 
 ```json
 {
-  "success": false,
-  "message": "错误描述",
-  "error": "详细错误信息"
+  "code": 400,
+  "data": null,
+  "message": "请求参数不能为空"
+}
+```
+
+或
+
+```json
+{
+  "code": 400,
+  "data": null,
+  "message": "birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式"
+}
+```
+
+或
+
+```json
+{
+  "code": 500,
+  "data": null,
+  "message": "错误详情"
 }
 ```
 
@@ -50,7 +104,7 @@
 
 ```javascript
 // 使用axios
-const response = await axios.post('http://您的服务器地址:3000/api/getStartDetail', {
+const response = await axios.post('http://您的IP地址:3000/api/getStartDetail', {
   birth: "2001-08-09 12:23:12",
   sex: "man"
 });
@@ -68,7 +122,7 @@ console.log(response.data);
 
 ```json
 {
-  "birth": "2001-08-09 12:23:12",
+  "birth": "2001-08-09 12:23:12",  // 标准日期时间格式
   "sex": "man"
   // 可添加其他工作流所需参数
 }
@@ -92,7 +146,7 @@ data: [DONE]
 
 ```javascript
 // 使用axios
-const response = await axios.post('http://您的服务器地址:3000/api/getStartDetailStream', {
+const response = await axios.post('http://您的IP地址:3000/api/getStartDetailStream', {
   birth: "2001-08-09 12:23:12",
   sex: "man"
 }, {
@@ -132,7 +186,8 @@ response.data.on('data', (chunk) => {
 ```json
 {
   "content": "用户输入的聊天内容",
-  "userId": "用户ID（可选，默认为123456789）"
+  "userId": "用户ID（可选，默认为123456789）",
+  "birth": "2001-08-09 12:23:12"  // 可选参数，标准日期时间格式
 }
 ```
 
@@ -154,7 +209,7 @@ data: [DONE]
 
 ```javascript
 // 使用axios
-const response = await axios.post('http://您的服务器地址:3000/api/chat/stream', {
+const response = await axios.post('http://您的IP地址:3000/api/chat/stream', {
   content: "你好，请介绍一下你自己",
   userId: "user123"
 }, {
@@ -193,7 +248,7 @@ response.data.on('data', (chunk) => {
 
 ```json
 {
-  "birth": "2001-08-09 12:23:12",
+  "birth": "2001-08-09 12:23:12",  // 必需参数，标准日期时间格式
   "sex": "man",
   "companion_sex": "woman",
   "area": "Beijing"
@@ -206,14 +261,15 @@ response.data.on('data', (chunk) => {
 
 ```json
 {
-  "success": true,
+  "code": 200,
   "data": {
-    // Coze工作流返回的完整数据
+    // 包含图片URL的工作流返回数据
+    "image_urls": [
+      "https://图片URL1.jpg",
+      "https://图片URL2.jpg"
+    ]
   },
-  "imageUrls": [
-    "https://图片URL1.jpg",
-    "https://图片URL2.jpg"
-  ]
+  "message": "成功"
 }
 ```
 
@@ -221,9 +277,19 @@ response.data.on('data', (chunk) => {
 
 ```json
 {
-  "success": false,
-  "message": "错误描述",
-  "error": "详细错误信息"
+  "code": 400,
+  "data": null,
+  "message": "请求参数不能为空"
+}
+```
+
+或
+
+```json
+{
+  "code": 500,
+  "data": null,
+  "message": "错误详情"
 }
 ```
 
@@ -231,7 +297,7 @@ response.data.on('data', (chunk) => {
 
 ```javascript
 // 使用axios
-const response = await axios.post('http://您的服务器地址:3000/api/getImg', {
+const response = await axios.post('http://您的IP地址:3000/api/getImg', {
   birth: "2001-08-09 12:23:12",
   sex: "man",
   companion_sex: "woman",
@@ -241,7 +307,7 @@ const response = await axios.post('http://您的服务器地址:3000/api/getImg'
 console.log(response.data);
 
 // 提取图片 URL
-const imageUrls = response.data.imageUrls;
+const imageUrls = response.data.data.image_urls;
 console.log('生成的图片URL列表:', imageUrls);
 ```
 
@@ -255,7 +321,7 @@ console.log('生成的图片URL列表:', imageUrls);
 
 ```json
 {
-  "birth": "2001-08-09 12:23:12",
+  "birth": "2001-08-09 12:23:12",  // 必需参数，标准日期时间格式
   "sex": "man",
   "companion_sex": "woman",
   "area": "Beijing"
@@ -280,7 +346,7 @@ data: [DONE]
 
 ```javascript
 // 使用axios
-const response = await axios.post('http://您的服务器地址:3000/api/getImg/stream', {
+const response = await axios.post('http://您的IP地址:3000/api/getImg/stream', {
   birth: "2001-08-09 12:23:12",
   sex: "man",
   companion_sex: "woman",
@@ -328,6 +394,7 @@ response.data.on('end', () => {
 
 | 错误码 | 说明 |
 |-------|------|
+| 200 | 请求成功 |
 | 400 | 请求参数错误，如参数为空或格式不正确 |
 | 500 | 服务器内部错误，包含Coze API调用失败 |
 
@@ -343,10 +410,25 @@ response.data.on('end', () => {
 | COZE_BOT_ID | 机器人ID | - |
 | COZE_IMG_WORKFLOW_ID | 图片生成工作流ID | - |
 | PORT | 服务器端口 | 3000 |
+| HOST | 服务器主机绑定地址 | 0.0.0.0 |
+
+## 服务器启动
+
+### 默认启动
+
+```bash
+npm run dev
+```
+
+### 使用IP地址启动（所有网络接口）
+
+```bash
+npm run dev:ip
+```
 
 ## 前端集成示例
 
-### HTML + JavaScript示例
+### 聊天示例 (HTML + JavaScript)
 
 ```html
 <!DOCTYPE html>
@@ -387,7 +469,7 @@ response.data.on('end', () => {
   <script>
     const chatbox = document.getElementById('chatbox');
     const messageInput = document.getElementById('messageInput');
-    const serverUrl = 'http://您的服务器地址:3000';
+    const serverUrl = 'http://您的IP地址:3000';
 
     function addMessage(content, isUser) {
       const div = document.createElement('div');
@@ -467,7 +549,7 @@ response.data.on('end', () => {
 </html>
 ```
 
-### 图片生成示例
+### 图片生成示例 (HTML + JavaScript)
 
 ```html
 <!DOCTYPE html>
@@ -523,6 +605,13 @@ response.data.on('end', () => {
       <label>地区:</label>
       <input type="text" id="area" value="Beijing">
     </div>
+    <div>
+      <label>请求方式:</label>
+      <select id="requestType">
+        <option value="stream">流式</option>
+        <option value="sync">非流式</option>
+      </select>
+    </div>
     <button type="submit">生成图片</button>
   </form>
   
@@ -533,7 +622,7 @@ response.data.on('end', () => {
     const form = document.getElementById('imageForm');
     const statusMessage = document.getElementById('statusMessage');
     const imageContainer = document.getElementById('imageContainer');
-    const serverUrl = 'http://您的服务器地址:3000';
+    const serverUrl = 'http://您的IP地址:3000';
     
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -550,71 +639,115 @@ response.data.on('end', () => {
         area: document.getElementById('area').value
       };
       
+      const requestType = document.getElementById('requestType').value;
+      
       try {
-        const response = await fetch(`${serverUrl}/api/getImg/stream`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(params)
-        });
-        
-        // 处理流式响应
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let imageUrls = [];
-        
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const text = decoder.decode(value);
-          const lines = text.split('\n\n');
-          
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.substring(6);
-              
-              if (data.trim() === '[DONE]') {
-                statusMessage.textContent = '图片生成完成！';
-                break;
-              }
-              
-              try {
-                const jsonData = JSON.parse(data);
-                
-                // 提取图片 URL
-                if (jsonData && jsonData.image_urls && jsonData.image_urls.length > 0) {
-                  for (const url of jsonData.image_urls) {
-                    if (!imageUrls.includes(url)) {
-                      imageUrls.push(url);
-                      
-                      // 创建图片元素
-                      const div = document.createElement('div');
-                      div.className = 'image-item';
-                      
-                      const img = document.createElement('img');
-                      img.src = url;
-                      img.alt = '生成的图片';
-                      
-                      div.appendChild(img);
-                      imageContainer.appendChild(div);
-                    }
-                  }
-                  
-                  statusMessage.textContent = `已接收 ${imageUrls.length} 张图片...`;
-                }
-              } catch (e) {
-                console.error('解析失败:', e);
-              }
-            }
-          }
+        if (requestType === 'stream') {
+          // 流式请求
+          await handleStreamRequest(params);
+        } else {
+          // 非流式请求
+          await handleSyncRequest(params);
         }
       } catch (error) {
         console.error('请求失败:', error);
         statusMessage.textContent = '生成图片失败，请稍后再试。';
       }
     });
+
+    // 处理流式请求
+    async function handleStreamRequest(params) {
+      const response = await fetch(`${serverUrl}/api/getImg/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+      });
+      
+      // 处理流式响应
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let imageUrls = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const text = decoder.decode(value);
+        const lines = text.split('\n\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.substring(6);
+            
+            if (data.trim() === '[DONE]') {
+              statusMessage.textContent = '图片生成完成！';
+              break;
+            }
+            
+            try {
+              const jsonData = JSON.parse(data);
+              
+              // 提取图片 URL
+              if (jsonData && jsonData.image_urls && jsonData.image_urls.length > 0) {
+                for (const url of jsonData.image_urls) {
+                  if (!imageUrls.includes(url)) {
+                    imageUrls.push(url);
+                    addImage(url);
+                  }
+                }
+                
+                statusMessage.textContent = `已接收 ${imageUrls.length} 张图片...`;
+              }
+            } catch (e) {
+              console.error('解析失败:', e);
+            }
+          }
+        }
+      }
+    }
+    
+    // 处理非流式请求
+    async function handleSyncRequest(params) {
+      const response = await fetch(`${serverUrl}/api/getImg`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+      });
+      
+      const result = await response.json();
+      
+      if (result.code === 200 && result.data) {
+        statusMessage.textContent = '图片生成完成！';
+        
+        // 提取图片 URL
+        const imageUrls = result.data.image_urls || [];
+        
+        if (imageUrls.length > 0) {
+          imageUrls.forEach(url => addImage(url));
+        } else {
+          statusMessage.textContent = '没有生成图片。';
+        }
+      } else {
+        statusMessage.textContent = `生成失败: ${result.message}`;
+      }
+    }
+    
+    // 添加图片到界面
+    function addImage(url) {
+      const div = document.createElement('div');
+      div.className = 'image-item';
+      
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '生成的图片';
+      
+      div.appendChild(img);
+      imageContainer.appendChild(div);
+    }
   </script>
 </body>
 </html>

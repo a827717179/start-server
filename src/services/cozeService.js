@@ -70,10 +70,11 @@ const getStartDetailStream = async (params) => {
 /**
  * 聊天服务（流式）
  * @param {string} content - 用户输入内容
+ * @param {string} birth - 用户出生日期
  * @param {string} userId - 用户ID
  * @returns {Promise<ReadableStream>} 聊天流式响应
  */
-const chatStream = async (content, userId = '123456789') => {
+const chatStream = async (content, birth = '', userId = '123456789') => {
   try {
     // 从配置中获取 bot_id
     const botId = auth.currentConfig.COZE_BOT_ID;
@@ -81,7 +82,8 @@ const chatStream = async (content, userId = '123456789') => {
     console.log('调用 Coze Chat 流式接口参数:', {
       bot_id: botId,
       user_id: userId,
-      content
+      content,
+      birth
     });
     
     // 调用 Coze API 的聊天流式接口
@@ -95,7 +97,10 @@ const chatStream = async (content, userId = '123456789') => {
           "role": "user",
           "type": "question"
         }
-      ]
+      ],
+      "meta_data": {
+        "user_birth": birth
+      }
     });
     
     console.log('Coze Chat 流式接口连接成功', stream);

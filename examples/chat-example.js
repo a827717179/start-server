@@ -61,10 +61,11 @@ const serverChatExample = async () => {
     // 通过 Express 服务调用聊天接口
     console.log('\n=== 通过 Express 服务调用聊天接口 ===');
     
-    const serverUrl = process.env.SERVER_URL || 'http://192.168.220.68:3000';
+    const serverUrl = process.env.SERVER_URL || 'http://192.168.220.83:3000';
     const response = await axios.post(`${serverUrl}/api/chat/stream`, {
-      content: '你好，请介绍一下你自己',
-      userId: '123456789'
+      content: ' What is my daily horoscope for today?',
+      userId: '123456789',
+      birth: '2001-08-01 12:00:00'
     }, {
       responseType: 'stream'
     });

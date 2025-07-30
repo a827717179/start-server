@@ -1,6 +1,21 @@
 const cozeService = require('../services/cozeService');
 
 /**
+ * 验证日期格式是否符合 YYYY-MM-DD HH:mm:ss
+ * @param {string} dateString - 日期字符串
+ * @returns {boolean} - 是否有效
+ */
+const isValidDateFormat = (dateString) => {
+  // 验证日期格式为 YYYY-MM-DD HH:mm:ss
+  const regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+  if (!regex.test(dateString)) return false;
+  
+  // 验证日期是否有效
+  const date = new Date(dateString.replace(' ', 'T'));
+  return !isNaN(date.getTime());
+};
+
+/**
  * 获取起始详情控制器
  * @param {Object} req - Express 请求对象
  * @param {Object} res - Express 响应对象
@@ -17,6 +32,15 @@ const getStartDetail = async (req, res) => {
         "message": '请求参数不能为空'
       });
     }
+    
+    // 验证birth格式（如果提供）
+    // if (params.birth && !isValidDateFormat(params.birth)) {
+    //   return res.status(400).json({
+    //     "code": 400,
+    //     "data": null,
+    //     "message": 'birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式'
+    //   });
+    // }
     
     // 调用服务获取结果
     const result = await cozeService.getStartDetail(params);
@@ -56,6 +80,15 @@ const getStartDetailStream = async (req, res) => {
         "message": '请求参数不能为空'
       });
     }
+
+    // 验证birth格式（如果提供）
+    // if (params.birth && !isValidDateFormat(params.birth)) {
+    //   return res.status(400).json({
+    //     "code": 400,
+    //     "data": null,
+    //     "message": 'birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式'
+    //   });
+    // }
 
     // 设置响应头
     res.setHeader('Content-Type', 'text/event-stream');
@@ -109,7 +142,7 @@ const getStartDetailStream = async (req, res) => {
  */
 const chatStreamController = async (req, res) => {
   try {
-    const { content, userId } = req.body;
+    const { content, userId, birth } = req.body;
     
     // 参数验证
     if (!content) {
@@ -120,6 +153,15 @@ const chatStreamController = async (req, res) => {
       });
     }
 
+    // 验证birth格式（如果提供）
+    // if (birth && !isValidDateFormat(birth)) {
+    //   return res.status(400).json({
+    //     "code": 400,
+    //     "data": null,
+    //     "message": 'birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式'
+    //   });
+    // }
+
     // 设置响应头
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -127,7 +169,7 @@ const chatStreamController = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
     // 获取聊天流式响应
-    const stream = await cozeService.chatStream(content, userId || '123456789');
+    const stream = await cozeService.chatStream(content, birth || '', userId || '123456789');
     
     // 处理流式数据
     for await (const chunk of stream) {
@@ -196,6 +238,15 @@ const getImgController = async (req, res) => {
       }
     }
     
+    // 验证birth格式
+    // if (!isValidDateFormat(params.birth)) {
+    //   return res.status(400).json({
+    //     "code": 400,
+    //     "data": null,
+    //     "message": 'birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式'
+    //   });
+    // }
+    
     // 调用服务获取结果
     const result = await cozeService.getImg(params);
 
@@ -246,6 +297,15 @@ const getImgStreamController = async (req, res) => {
         });
       }
     }
+
+    // 验证birth格式
+    // if (!isValidDateFormat(params.birth)) {
+    //   return res.status(400).json({
+    //     "code": 400,
+    //     "data": null,
+    //     "message": 'birth 字段格式无效，请使用 YYYY-MM-DD HH:mm:ss 格式'
+    //   });
+    // }
 
     // 设置响应头
     res.setHeader('Content-Type', 'text/event-stream');
